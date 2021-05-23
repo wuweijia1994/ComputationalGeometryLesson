@@ -22,35 +22,88 @@ bool search_convex_hull(const std::vector<Point> &_all_pts, std::vector<Point> &
         return false;
     }
 
-    auto bottom_left_comp = [](const Point &l, const Point &r)
+    auto x_comp = [](const Point &l, const Point &r)
     {
-        if (std::abs(l.y - r.y) > 0.001)
-        {
-            return l.y < r.y;
-        }
-        else
-        {
-            return l.x < r.x;
-        }
+        return l.x < r.x;
+    };
+
+    auto y_comp = [](const Point &l, const Point &r)
+    {
+        return l.y < r.y;
     };
 
     std::vector<Point> pts;
     pts.insert(pts.end(), _all_pts.begin(), _all_pts.end());
-    auto iter = std::min_element(pts.begin(), pts.end(), bottom_left_comp);
+    auto x_iter = std::min_element(pts.begin(), pts.end(), x_comp);
+    auto y_iter = std::min_element(pts.begin(), pts.end(), y_comp);
+    std::swap(pts[0],pts[y_iter-pts.begin()]);
+    Point& ref = pts[0];
 
-    auto angle_comp = [iter](const Point &l, const Point &r)
+    auto angle_comp = [ref](const Point &l, const Point &r)
     {
-        auto first_seg = l - *iter;
-        auto second_seg = r - *iter;
-        if (first_seg.length() < 0.001)
+        auto first_seg = l - ref;
+        auto second_seg = r - ref;
+
+        float ret = cross_2d(first_seg, second_seg);
+        if (std::abs(ret) > 0.001)
         {
-            return true;
+            return ret > 0;
+        }
+        else
+        {
+            return first_seg.x < second_seg.x;
+        }
+    };
+
+    std::sort(pts.begin()+1, pts.end(), angle_comp);
+
+    for (size_t i = 0; i < pts.size(); i++)
+    {
+        if (i < 2)
+        {
+            _convex_pts.push_back(pts[i]);
+            continue;
         }
 
-        if (second_seg.length() < 0.001)
+        size_t last_idx = _convex_pts.size() - 1;
+        if (if_turn_left(_convex_pts[last_idx - 1], _convex_pts[last_idx], pts[i]))
         {
-            return false;
+            _convex_pts.push_back(pts[i]);
         }
+        else
+        {
+            _convex_pts.pop_back();
+            i--;
+        }
+    }
+
+    return true;
+}
+
+bool search_unconvex_points(const std::vector<Point> &_all_pts, std::vector<Point> &_unconvex_pts)
+{
+    std::vector<Point> convex_pts;
+    _unconvex_pts.clear();
+    if (_all_pts.empty())
+    {
+        return false;
+    }
+
+    auto y_comp = [](const Point &l, const Point &r)
+    {
+        return l.y < r.y;
+    };
+
+    std::vector<Point> pts;
+    pts.insert(pts.end(), _all_pts.begin(), _all_pts.end());
+    auto y_iter = std::min_element(pts.begin(), pts.end(), y_comp);
+    std::swap(pts[0],pts[y_iter-pts.begin()]);
+    Point& ref = pts[0];
+
+    auto angle_comp = [ref](const Point &l, const Point &r)
+    {
+        auto first_seg = l - ref;
+        auto second_seg = r - ref;
 
         float ret = cross_2d(first_seg, second_seg);
         if (std::abs(ret) > 0.001)
@@ -65,31 +118,23 @@ bool search_convex_hull(const std::vector<Point> &_all_pts, std::vector<Point> &
 
     std::sort(pts.begin(), pts.end(), angle_comp);
 
-    for (auto &pt : pts)
-    {
-        printf("%f, %f\n", pt.x, pt.y);
-    }
-
     for (size_t i = 0; i < pts.size(); i++)
     {
         if (i < 2)
         {
-            _convex_pts.push_back(pts[i]);
+            convex_pts.push_back(pts[i]);
             continue;
         }
 
-        size_t last_idx = _convex_pts.size() - 1;
-        if (if_turn_left(_convex_pts[last_idx - 1], _convex_pts[last_idx], pts[i]))
+        size_t last_idx = convex_pts.size() - 1;
+        if (if_turn_left(convex_pts[last_idx - 1], convex_pts[last_idx], pts[i]))
         {
-            printf("left convex %d -> [%f, %f]\n", last_idx, _convex_pts[last_idx-1].x, _convex_pts[last_idx-1].y);
-            printf("left convex %d -> [%f, %f]\n", last_idx, _convex_pts[last_idx].x, _convex_pts[last_idx].y);
-            printf("left %d -> [%f, %f]\n", i, pts[i].x, pts[i].y);
-            _convex_pts.push_back(pts[i]);
+            convex_pts.push_back(pts[i]);
         }
         else
         {
-            printf("else %d -> [%f, %f]\n", i, pts[i].x, pts[i].y);
-            _convex_pts.pop_back();
+            _unconvex_pts.push_back(convex_pts.back());
+            convex_pts.pop_back();
             i--;
         }
     }
