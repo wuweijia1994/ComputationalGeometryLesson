@@ -1,20 +1,22 @@
 #ifndef __POINT_H__
 #define __POINT_H__
-#include <cmath>
+#include <math.h>
 
 class Point
 {
 public:
-    float x = 0;
-    float y = 0;
+    float x = 0.0f;
+    float y = 0.0f;
 
-    Point(float _x, float _y): x(_x), y(_y)
-    {}
+    Point(float _x, float _y) : x(_x), y(_y)
+    {
+    }
 
-    Point(const Point& other): x(other.x), y(other.y)
-    {}
+    Point(const Point &other) : x(other.x), y(other.y)
+    {
+    }
 
-    Point operator-(const Point& other) const
+    Point operator-(const Point &other) const
     {
         Point ret(*this);
         ret.x -= other.x;
@@ -22,7 +24,7 @@ public:
         return ret;
     }
 
-    Point operator+(const Point& other) const
+    Point operator+(const Point &other) const
     {
         Point ret(*this);
         ret.x += other.x;
@@ -32,7 +34,7 @@ public:
 
     float length()
     {
-        return sqrt(x*x + y*y);
+        return sqrt(x * x + y * y);
     }
 };
 

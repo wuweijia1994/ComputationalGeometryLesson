@@ -1,18 +1,8 @@
 #include <cstdio>
 #include <algorithm>
 #include <vector>
-#include "point.h"
-
-float cross_2d(const Point &l, const Point &r)
-{
-    return l.x * r.y - l.y * r.x;
-}
-
-bool if_turn_left(const Point &first, const Point &middle, const Point &last)
-{
-    float ret = cross_2d(middle - first, last - middle);
-    return ret >= 0;
-}
+#include <point.h>
+#include <cg_math.h>
 
 bool search_convex_hull(const std::vector<Point> &_all_pts, std::vector<Point> &_convex_pts)
 {
@@ -22,11 +12,6 @@ bool search_convex_hull(const std::vector<Point> &_all_pts, std::vector<Point> &
         return false;
     }
 
-    auto x_comp = [](const Point &l, const Point &r)
-    {
-        return l.x < r.x;
-    };
-
     auto y_comp = [](const Point &l, const Point &r)
     {
         return l.y < r.y;
@@ -34,10 +19,9 @@ bool search_convex_hull(const std::vector<Point> &_all_pts, std::vector<Point> &
 
     std::vector<Point> pts;
     pts.insert(pts.end(), _all_pts.begin(), _all_pts.end());
-    auto x_iter = std::min_element(pts.begin(), pts.end(), x_comp);
     auto y_iter = std::min_element(pts.begin(), pts.end(), y_comp);
-    std::swap(pts[0],pts[y_iter-pts.begin()]);
-    Point& ref = pts[0];
+    std::swap(pts[0], pts[y_iter - pts.begin()]);
+    Point &ref = pts[0];
 
     auto angle_comp = [ref](const Point &l, const Point &r)
     {
@@ -55,7 +39,7 @@ bool search_convex_hull(const std::vector<Point> &_all_pts, std::vector<Point> &
         }
     };
 
-    std::sort(pts.begin()+1, pts.end(), angle_comp);
+    std::sort(pts.begin() + 1, pts.end(), angle_comp);
 
     for (size_t i = 0; i < pts.size(); i++)
     {
@@ -97,8 +81,8 @@ bool search_unconvex_points(const std::vector<Point> &_all_pts, std::vector<Poin
     std::vector<Point> pts;
     pts.insert(pts.end(), _all_pts.begin(), _all_pts.end());
     auto y_iter = std::min_element(pts.begin(), pts.end(), y_comp);
-    std::swap(pts[0],pts[y_iter-pts.begin()]);
-    Point& ref = pts[0];
+    std::swap(pts[0], pts[y_iter - pts.begin()]);
+    Point &ref = pts[0];
 
     auto angle_comp = [ref](const Point &l, const Point &r)
     {
